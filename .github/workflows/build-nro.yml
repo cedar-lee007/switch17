@@ -1,0 +1,34 @@
+name: Build Switch17 Curfew
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64:latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Arrange sources
+        run: |
+          mkdir -p source
+          for f in main.c pctl17.c pctl17.h menu.c menu.h; do
+            if [ -f "$f" ]; then mv "$f" source/; fi
+          done
+          ls -la source
+
+      - name: Build .nro
+        run: make
+
+      - name: Upload .nro artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: switch17_curfew
+          path: switch17_curfew.nro
+          if-no-files-found: error
