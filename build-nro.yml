@@ -1,0 +1,40 @@
+name: Build Switch17 Curfew
+
+# 触发方式：
+#   1) 手动点 GitHub 仓库 Actions 页面的 "Run workflow"
+#   2) 或 push 代码到 main/master 分支自动触发
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 官方 devkitA64 容器，已内置 devkitPro 工具链 + libnx，无需安装
+    container:
+      image: devkitpro/devkita64:latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Show toolchain version
+        run: |
+          echo "DEVKITPRO=$DEVKITPRO"
+          aarch64-none-elf-gcc --version | head -1
+
+      - name: Build .nro
+        run: make
+
+      - name: Verify output
+        run: |
+          ls -lh switch17_curfew.nro
+          test -s switch17_curfew.nro
+
+      - name: Upload .nro artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: switch17_curfew
+          path: switch17_curfew.nro
+          if-no-files-found: error
